@@ -247,7 +247,7 @@ const SOUNDS = {
 function playSound(soundId) {
     switch (soundId) {
         case SOUNDS.boom:
-            document.getElementById('boom');
+            document.getElementById('boom').play();
             break;
     }
 }
