@@ -8,6 +8,16 @@ const STATE = {
     gameOver: 4
 };
 
+
+const HITBOX = {
+    upperBound: 140,
+    lowerBound: 260
+};
+
+const SCORE_KEY = "score";
+
+const GRAVITY = 0.1;
+
 var media = {
     boom: {
         src: "assets/boom.mp3"
@@ -27,7 +37,7 @@ var media = {
 
 };
 var gameState;
-const GRAVITY = 0.1;
+
 var gameObjects = {
     background: {
         ground: {
@@ -46,46 +56,41 @@ var gameObjects = {
 var translation = 0;
 var score = 0;
 var ctx;
+var controller;
 
 window.addEventListener('load', main);
 
 function main() {
     Resources.load();
-    var controller = new Controller();
+    controller = new Controller();
     controller.init();
 
-    var processInput = function () {
-        switch (gameState) {
-            case STATE.standing:
-                gameObjects.target.vy = 1; //zacne padat
-                gameState = STATE.falling;
-                break;
-            case STATE.falling:
-                gameObjects.character.animate = true; //dalsi input, zacne se naprahovat palkou
-                break;
-            case STATE.gameOver:
-                gameState = STATE.standing;
-                controller.restart();
-                requestAnimationFrame(View.redraw);
-        }
 
-    };
     window.addEventListener('keydown', processInput);
     window.addEventListener('touchend', processInput);
     requestAnimationFrame(View.redraw);
 
 }
+function processInput() {
+    switch (gameState) {
+        case STATE.standing:
+            gameObjects.target.vy = 1; //zacne padat
+            gameState = STATE.falling;
+            break;
+        case STATE.falling:
+            gameObjects.character.animate = true; //dalsi input, zacne se naprahovat palkou
+            break;
+        case STATE.gameOver:
+            gameState = STATE.standing;
+            controller.restart();
+            requestAnimationFrame(View.redraw);
+    }
 
+};
 //nejak nejde
 //window.addEventListener('deviceready', loadAudioCordova);
 
 
-const HITBOX = {
-    upperBound: 140,
-    lowerBound: 260
-};
-
-const SCORE_KEY = "score";
 
 function sortCmp(a, b) {
     return b - a;
