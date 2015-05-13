@@ -11,19 +11,42 @@ const STATE = {
 var media = {
     boom: {
         src: "assets/boom.mp3"
+    },
+    ouch: {
+        src: "assets/ouch.mp3"
+    },
+    playSound: function (name) {
+        if (typeof this[name].value == 'undefined') {
+            this[name].value = new Media(this[name].src, afterPlay);
+        }
+        this[name].value.play();
+        if (typeof device != 'undefined') {
+            this[name].value.seekTo(0);
+        }
     }
+
 };
-loadAudioDesktop();
 var gameState;
 const GRAVITY = 0.1;
-var gameObjects;
+var gameObjects = {
+    background: {
+        ground: {
+            color: "#AAAAAA",
+            x: 0,
+            y: 350
+        },
+        draw: function (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillStyle = this.ground.color;
+            ctx.fillRect(this.ground.x, this.ground.y, WIDTH - this.ground.x, HEIGHT - this.ground.y);
+        }
+    }
+};
 var translation = 0;
 var score = 0;
-function init() {
-    translation = 0;
-    score = 0;
-    var target;
-    var character;
+var ctx;
+function loadResources() {
     gameState = STATE.standing;
     var targetImg = new Image();
     targetImg.src = 'assets/targetGuy.png';
@@ -35,29 +58,13 @@ function init() {
     charImg.addEventListener('load', function () {
         gameObjects['character'] = new Character(this);
     });
-    gameObjects = {
-        background: {
-            ground: {
-                color: "#AAAAAA",
-                x: 0,
-                y: 350
-            },
-            draw: function (ctx) {
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, WIDTH, HEIGHT);
-                ctx.fillStyle = this.ground.color;
-                ctx.fillRect(this.ground.x, this.ground.y, WIDTH - this.ground.x, HEIGHT - this.ground.y);
-            }
-
-        }
-    };
+    loadAudioDesktop();
+    loadAudioCordova();
 }
-
-
 function onLoad() {
-    init();
+    loadResources();
     var canvas = document.getElementById('canvas');
-    var ctx = this.canvas.getContext('2d');
+    ctx = this.canvas.getContext('2d');
 
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
@@ -67,27 +74,38 @@ function onLoad() {
     ctx.scale(canvas.width / WIDTH, canvas.height / HEIGHT);
 
     window.requestAnimationFrame(redraw);
+    init();
 
-    function redraw() {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
-        for (var objName in gameObjects) {
-            //noinspection JSUnfilteredForInLoop
-            var gameObject = gameObjects[objName];
-            gameObject.draw(ctx);
-        }
-        drawScore(ctx);
-        if (gameState == STATE.gameOver) {
-            drawGameOver(ctx);
-        }
-        if (gameState != STATE.gameOver) {
-            window.requestAnimationFrame(redraw);
-        }
-    }
 
 }
 
-
+function init() {
+    translation = 0;
+    score = 0;
+    gameState = STATE.standing;
+    redraw();
+}
+function restart() {
+    gameObjects.target = new Target(gameObjects.target.image);
+    gameObjects.character = new Character(gameObjects.character.image);
+    init();
+}
+function redraw() {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    for (var objName in gameObjects) {
+        //noinspection JSUnfilteredForInLoop
+        var gameObject = gameObjects[objName];
+        gameObject.draw(ctx);
+    }
+    drawScore(ctx);
+    if (gameState == STATE.gameOver) {
+        drawGameOver(ctx);
+    }
+    if (gameState != STATE.gameOver) {
+        window.requestAnimationFrame(redraw);
+    }
+}
 function Character(img) {
     this.image = img;
     this.x = WIDTH - 231;
@@ -105,7 +123,7 @@ function Character(img) {
         if (this.doDraw) {
             ctx.drawImage(this.image, this.tileX * this.tileWidth, 0, this.tileWidth, this.image.height,
                 this.x + translation, this.y, this.tileWidth, this.image.height);
-            if (!(this.x + translation >= 0 && this.x + translation <= WIDTH)) {
+            if (!isVisible(this.x + translation, this.y)) {
                 this.doDraw = false;
             }
             if (this.animate) {
@@ -150,7 +168,7 @@ function Target(image) {
     };
     this.update = function () {
         if (gameState == STATE.hitting && this.y >= HITBOX.upperBound && this.y <= HITBOX.lowerBound) {
-            media.boom.value.play();
+            media.playSound('boom');
             var hitWidthInPercents = (this.y - HITBOX.upperBound) / HITBOX.lowerBound;
             this.vx = -5; //zacne letet vpravo
             this.vy = -10 * (1 - hitWidthInPercents);
@@ -182,6 +200,7 @@ const HITBOX = {
     lowerBound: 260
 };
 function drawGameOver(ctx) {
+    media.playSound('ouch');
     var scores = getHighScores();
     var metrics = ctx.measureText('Game Over!');
     var textCoords = {x: WIDTH / 2 - metrics.width / 2, y: HEIGHT / 2 - 50 / 2};
@@ -243,14 +262,25 @@ function processInput() {
             break;
         case STATE.gameOver:
             gameState = STATE.standing;
-            onLoad();
+            restart();
     }
 
 }
 
-function Mine(x, y) {
+function Mine(x) {
     this.x = x;
-    this.y = y;
+    this.y = gameObjects.background.ground.y;
+    this.prototype.colorBackground = "#000000";
+    this.prototype.colorHead = "#FF0000";
+    this.prototype.width = 50;
+    this.prototype.height = 20;
+    this.visible = false;
+    this.draw = function (ctx) {
+        ctx.fillStyle = Mine.colorBackground;
+        ctx.fillRect(this.x, this.y, Mine.width, Mine.height);
+        ctx.fillStyle = Mine.colorHead;
+        ctx.fillRect(this.x + Mine.width - 10, this.y, 20, 5);
+    };
 }
 
 
@@ -259,17 +289,33 @@ window.addEventListener('touchend', processInput);
 window.addEventListener('load', onLoad);
 window.addEventListener('deviceready', loadAudioCordova);
 function loadAudioDesktop() {
-    for (var objName in media) {
-        var oneMedia = media[objName];
-        oneMedia['value'] = new Audio(oneMedia.src);
+    if (typeof device == 'undefined') {
+        for (var objName in media) {
+            var oneMedia = media[objName];
+            if (typeof oneMedia == 'object') {
+                oneMedia['value'] = new Audio(oneMedia.src);
+            }
+        }
     }
 }
 function loadAudioCordova() {
-    for (var objName in media) {
-        var oneMedia = media[objName];
-        if (device.platform == 'android') {
-            oneMedia.src = '/android_asset/www/' + oneMedia.src;
-            oneMedia['value'] = new Media(oneMedia.src);
+    console.log('codovaAudioLoaded');
+    if (typeof device != 'undefined') {
+        for (var objName in media) {
+            var oneMedia = media[objName];
+            if (typeof oneMedia == 'object') {
+                if (device.platform == 'Android') {
+                    oneMedia.src = '/android_asset/www/' + oneMedia.src;
+                }
+                oneMedia['value'] = new Media(oneMedia.src, afterPlay);
+            }
         }
     }
+}
+function afterPlay() {
+    this.stop();
+    this.release();
+}
+function isVisible(x, y) {
+    return x >= 0 && x <= WIDTH && y >= 0 && y <= HEIGHT;
 }
