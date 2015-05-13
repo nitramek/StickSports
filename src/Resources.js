@@ -41,6 +41,18 @@ var Resources = {
     afterPlay: function () {
         this.stop();
         this.release();
-    }
+    },
+    getHighScores: function () {
+        var ls = window.localStorage;
+        var scores = [];
+        if (ls) {
+            if (ls.getItem(SCORE_KEY)) scores = JSON.parse(ls.getItem(SCORE_KEY));
+            scores.push(score);
+            scores.sort(sortCmp);
+            scores = scores.slice(0, 5); //top 5
+            ls.setItem(SCORE_KEY, JSON.stringify(scores));
+        }
+        return scores;
 
+    }
 };

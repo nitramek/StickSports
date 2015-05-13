@@ -17,7 +17,7 @@ var View = {
     },
     drawGameOver: function (ctx) {
         media.playSound('ouch');
-        var scores = getHighScores();
+        var scores = Resources.getHighScores();
         var metrics = ctx.measureText('Game Over!');
         var textCoords = {x: WIDTH / 2 - metrics.width / 2, y: HEIGHT / 2 - 50 / 2};
         ctx.fillStyle = '#FF0000';
