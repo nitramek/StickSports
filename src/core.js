@@ -7,6 +7,13 @@ const STATE = {
     hitting: 3,
     gameOver: 4
 };
+
+var media = {
+    boom: {
+        src: "assets/boom.mp3"
+    }
+};
+loadAudioDesktop();
 var gameState;
 const GRAVITY = 0.1;
 var gameObjects;
@@ -143,7 +150,7 @@ function Target(image) {
     };
     this.update = function () {
         if (gameState == STATE.hitting && this.y >= HITBOX.upperBound && this.y <= HITBOX.lowerBound) {
-            playSound(SOUNDS.boom);
+            media.boom.value.play();
             var hitWidthInPercents = (this.y - HITBOX.upperBound) / HITBOX.lowerBound;
             this.vx = -5; //zacne letet vpravo
             this.vy = -10 * (1 - hitWidthInPercents);
@@ -241,18 +248,28 @@ function processInput() {
 
 }
 
-const SOUNDS = {
-    boom: 0
-};
-function playSound(soundId) {
-    switch (soundId) {
-        case SOUNDS.boom:
-            document.getElementById('boom').play();
-            break;
-    }
+function Mine(x, y) {
+    this.x = x;
+    this.y = y;
 }
 
 
 window.addEventListener('keydown', processInput);
 window.addEventListener('touchend', processInput);
 window.addEventListener('load', onLoad);
+window.addEventListener('deviceready', loadAudioCordova);
+function loadAudioDesktop() {
+    for (var objName in media) {
+        var oneMedia = media[objName];
+        oneMedia['value'] = new Audio(oneMedia.src);
+    }
+}
+function loadAudioCordova() {
+    for (var objName in media) {
+        var oneMedia = media[objName];
+        if (device.platform == 'android') {
+            oneMedia.src = '/android_asset/www/' + oneMedia.src;
+            oneMedia['value'] = new Media(oneMedia.src);
+        }
+    }
+}
