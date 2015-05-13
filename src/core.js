@@ -46,9 +46,6 @@ function init() {
     };
 }
 
-window.addEventListener('keydown', changeGameState);
-window.addEventListener('touchend', changeGameState);
-window.addEventListener('load', onLoad);
 
 function onLoad() {
     init();
@@ -142,6 +139,16 @@ function Target(image) {
         ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height,
             -this.width / 2, -this.height / 2, this.width, this.height);//, this.image.width, this.image.height);
         ctx.restore();
+        this.update();
+    };
+    this.update = function () {
+        if (gameState == STATE.hitting && this.y >= HITBOX.upperBound && this.y <= HITBOX.lowerBound) {
+            playSound(SOUNDS.boom);
+            var hitWidthInPercents = (this.y - HITBOX.upperBound) / HITBOX.lowerBound;
+            this.vx = -5; //zacne letet vpravo
+            this.vy = -10 * (1 - hitWidthInPercents);
+            gameState = STATE.flying; //trefil se zacne letet
+        }
         var decidingParameter = this.height;
         if (gameState == STATE.falling) {
             this.vy += GRAVITY;
@@ -155,6 +162,7 @@ function Target(image) {
         }
         if (this.vx != 0)
             score += 1;
+
         this.x += this.vx;
         this.y += this.vy;
     }
@@ -217,7 +225,7 @@ function drawScore(ctx) {
     ctx.font = '20px Arial bold';
     ctx.fillText('Score: ' + score, 0, 20);
 }
-function changeGameState() {
+function processInput() {
     switch (gameState) {
         case STATE.standing:
             gameObjects.target.vy = 1; //zacne padat
@@ -226,38 +234,9 @@ function changeGameState() {
         case STATE.falling:
             gameObjects.character.animate = true; //dalsi input, zacne se naprahovat palkou
             break;
-        case STATE.hitting: //muze se trefit
-            if (gameObjects.target.y >= HITBOX.upperBound && gameObjects.target.y <= HITBOX.lowerBound) {
-                playSound(SOUNDS.boom);
-                var target = gameObjects.target;
-                var hitWidthInPercents = (gameObjects.target.y - HITBOX.upperBound) / HITBOX.lowerBound;
-                target.vx = -5; //zacne letet vpravo
-                target.vy = -10 * (1 - hitWidthInPercents);
-                gameState = STATE.flying; //trefil se zacne letet
-            }
-            break;
         case STATE.gameOver:
             gameState = STATE.standing;
             onLoad();
-            break;
-    }
-}
-function processInput() {
-    switch (gameState) {
-        case STATE.standing:
-            gameObjects.target.vy = 1; //zacne padat
-            gameState = STATE.falling;
-            break;
-        case STATE.hitting: // stav kdy se jde trefit
-            if (gameObjects.target.y >= HITBOX.upperBound && gameObjects.target.y <= HITBOX.lowerBound) {
-                playSound(SOUNDS.boom);
-                var target = gameObjects.target;
-                var hitWidthInPercents = (gameObjects.target.y - HITBOX.upperBound) / HITBOX.lowerBound;
-                target.vx = -5; //zacne letet vpravo
-                target.vy = -10 * (1 - hitWidthInPercents);
-                gameState = STATE.flying; //trefil se zacne letet
-            }
-            break;
     }
 
 }
@@ -274,3 +253,6 @@ function playSound(soundId) {
 }
 
 
+window.addEventListener('keydown', processInput);
+window.addEventListener('touchend', processInput);
+window.addEventListener('load', onLoad);
