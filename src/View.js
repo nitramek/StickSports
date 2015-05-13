@@ -9,6 +9,8 @@ var View = {
                 for(var i in gameObject){
                     if (Model.isVisible(gameObject[i])) {
                         gameObject[i].draw();
+                        gameObject[i].collision();
+
                     }else{
                         gameObject.splice(i,1);
                     }
@@ -25,7 +27,7 @@ var View = {
         if (gameState != STATE.gameOver) {
             window.requestAnimationFrame(View.redraw);
         }
-        if (score > 0 && score % 100 == 0) {
+        if (score > 0 && score % 50 == 0) {
             controller.addMine();
         }
     },

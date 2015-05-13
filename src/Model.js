@@ -13,9 +13,11 @@ var Model = {
         //this.
         this.draw = function () {
             //jestli je na obrazovce
+
+            this.x -= gameObjects.target.vx;
             if (this.doDraw) {
                 ctx.drawImage(this.image, this.tileX * this.tileWidth, 0, this.tileWidth, this.image.height,
-                    this.x + translation, this.y, this.tileWidth, this.image.height);
+                    this.x, this.y, this.tileWidth, this.image.height);
                 if (!Model.isVisible(this)) {
                     this.doDraw = false;
                 }
@@ -43,6 +45,7 @@ var Model = {
         this.angle = 180;
         this.width = image.width / 2;
         this.height = image.height / 2;
+        this.bounced = 0;
         this.draw = function () {
             ctx.save();
             if (gameState == STATE.flying) {
@@ -52,7 +55,7 @@ var Model = {
                     this.angle = 180 / Math.PI * Math.atan(Math.abs(this.vy) / Math.abs(this.vx)) + 270;
                 }
             }
-            ctx.translate(this.x + this.width / 2 + translation, this.y + this.height / 2); //presunout obrazek na centr panacka
+            ctx.translate(this.x + this.width / 2, this.y + this.height / 2); //presunout obrazek na centr panacka
             ctx.rotate(this.angle * Math.PI / 180); //otoceni
             ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height,
                 -this.width / 2, -this.height / 2, this.width, this.height);//, this.image.width, this.image.height);
@@ -81,7 +84,7 @@ var Model = {
             if (this.vx != 0)
                 score += 1;
 
-            this.x += this.vx;
+            //this.x += this.vx;
             this.y += this.vy;
         }
 
@@ -89,16 +92,25 @@ var Model = {
     },
     Mine: function (x) {
         this.x = x;
-        this.y = gameObjects.background.ground.y - Model.Mine.height/2;
+        this.y = gameObjects.background.ground.y - Model.Mine.height / 2;
         this.draw = function () {
+            this.x -= gameObjects.target.vx;
             ctx.fillStyle = Model.Mine.colorBackground;
-            ctx.fillRect(this.x + translation, this.y, Model.Mine.width, Model.Mine.height);
+            ctx.fillRect(this.x, this.y, Model.Mine.width, Model.Mine.height);
             ctx.fillStyle = Model.Mine.colorHead;
-            ctx.fillRect(this.x + 15 + translation, this.y, 20, 5);
+            ctx.fillRect(this.x + 15, this.y, 20, 5);
         };
+        this.collision = function () {
+            var t = gameObjects.target;
+            if (t.x >= this.x && t.y + t.height >= this.y) {
+
+                t.vy -= (t.bounced < 8) ? 8 - t.bounced : t.vy;
+                gameObjects.target.bounced++;
+            }
+        }
     },
     isVisible: function (model) {
-        return model.x + translation >= 0 && model.x + translation <= WIDTH && model.y >= 0 && model.y <= HEIGHT;
+        return model.x >= 0 && model.x <= WIDTH && model.y >= 0 && model.y <= HEIGHT;
     }
 
 };

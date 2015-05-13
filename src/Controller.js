@@ -20,7 +20,8 @@ function Controller() {
         this.init();
 
     };
-    this.addMine = function(){
-        gameObjects.mines.push(new Model.Mine(Math.floor((Math.random() * 10) - 10)));
+    this.addMine = function () {
+        gameObjects.mines.push(new Model.Mine(150 + Math.floor((Math.random() * 10) - 10)));
+        console.log(gameObjects.mines.length);
     }
 }
