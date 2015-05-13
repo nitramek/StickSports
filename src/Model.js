@@ -59,6 +59,8 @@ var Model = {
             ctx.rotate(this.angle * Math.PI / 180); //otoceni
             ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height,
                 -this.width / 2, -this.height / 2, this.width, this.height);//, this.image.width, this.image.height);
+            //ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height,
+            //    this.x, this.y, this.width, this.height);//, this.image.width, this.image.height);
             ctx.restore();
             this.update();
         };
@@ -102,11 +104,20 @@ var Model = {
         };
         this.collision = function () {
             var t = gameObjects.target;
-            if (t.x >= this.x && t.y + t.height >= this.y) {
-
+            //if (t.angle >= 180 && t.angle <= 270) {
+            //    var alfa = t.angle * Math.PI / 180;
+            //    var x = t.x * Math.cos(alfa) - t.y * Math.sin(alfa);
+            //    var y = t.y * Math.cos(alfa) + t.x * Math.sin(alfa);//vypocet otoceneho bodu
+            //    if (y >= this.y && x >= this.x && x <= this.x) {
+            //        t.vy -= (t.bounced < 8) ? 8 - t.bounced : t.vy;
+            //        gameObjects.target.bounced++;
+            //    }
+            //}
+            if(t.y + t.height >= this.y && t.x >= this.x && t.x <= this.x + Model.Mine.width ){
                 t.vy -= (t.bounced < 8) ? 8 - t.bounced : t.vy;
                 gameObjects.target.bounced++;
             }
+
         }
     },
     isVisible: function (model) {

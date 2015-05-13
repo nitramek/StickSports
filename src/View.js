@@ -27,7 +27,7 @@ var View = {
         if (gameState != STATE.gameOver) {
             window.requestAnimationFrame(View.redraw);
         }
-        if (score > 0 && score % 50 == 0) {
+        if (score > 0 && score % 60 == 0) {
             controller.addMine();
         }
     },
