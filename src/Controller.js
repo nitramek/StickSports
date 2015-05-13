@@ -12,10 +12,15 @@ function Controller() {
         translation = 0;
         score = 0;
         gameState = STATE.standing;
+        gameObjects.mines = [];
     };
     this.restart = function () {
         gameObjects.target = new Model.Target(gameObjects.target.image);
         gameObjects.character = new Model.Character(gameObjects.character.image);
         this.init();
+
     };
+    this.addMine = function(){
+        gameObjects.mines.push(new Model.Mine(Math.floor((Math.random() * 10) - 10)));
+    }
 }

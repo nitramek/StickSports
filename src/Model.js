@@ -11,12 +11,12 @@ var Model = {
         this.animate = false;
         this.doDraw = true;
         //this.
-        this.draw = function (ctx) {
+        this.draw = function () {
             //jestli je na obrazovce
             if (this.doDraw) {
                 ctx.drawImage(this.image, this.tileX * this.tileWidth, 0, this.tileWidth, this.image.height,
                     this.x + translation, this.y, this.tileWidth, this.image.height);
-                if (!Model.isVisible(this.x + translation, this.y)) {
+                if (!Model.isVisible(this)) {
                     this.doDraw = false;
                 }
                 if (this.animate) {
@@ -43,7 +43,7 @@ var Model = {
         this.angle = 180;
         this.width = image.width / 2;
         this.height = image.height / 2;
-        this.draw = function (ctx) {
+        this.draw = function () {
             ctx.save();
             if (gameState == STATE.flying) {
                 if (this.vy > 0) {//pada dolu
@@ -89,21 +89,20 @@ var Model = {
     },
     Mine: function (x) {
         this.x = x;
-        this.y = gameObjects.background.ground.y;
-        this.prototype.colorBackground = "#000000";
-        this.prototype.colorHead = "#FF0000";
-        this.prototype.width = 50;
-        this.prototype.height = 20;
-        this.visible = false;
-        this.draw = function (ctx) {
+        this.y = gameObjects.background.ground.y - Model.Mine.height/2;
+        this.draw = function () {
             ctx.fillStyle = Model.Mine.colorBackground;
-            ctx.fillRect(this.x, this.y, Model.Mine.width, Model.Mine.height);
+            ctx.fillRect(this.x + translation, this.y, Model.Mine.width, Model.Mine.height);
             ctx.fillStyle = Model.Mine.colorHead;
-            ctx.fillRect(this.x + Model.Mine.width - 10, this.y, 20, 5);
+            ctx.fillRect(this.x + 15 + translation, this.y, 20, 5);
         };
     },
-    isVisible: function (x, y) {
-        return x >= 0 && x <= WIDTH && y >= 0 && y <= HEIGHT;
+    isVisible: function (model) {
+        return model.x + translation >= 0 && model.x + translation <= WIDTH && model.y >= 0 && model.y <= HEIGHT;
     }
 
 };
+Model.Mine.colorBackground = "#000000";
+Model.Mine.colorHead = "#FF0000";
+Model.Mine.width = 50;
+Model.Mine.height = 20;

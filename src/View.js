@@ -5,17 +5,31 @@ var View = {
         for (var objName in gameObjects) {
             //noinspection JSUnfilteredForInLoop
             var gameObject = gameObjects[objName];
-            gameObject.draw(ctx);
+            if (Array.isArray(gameObject)) {
+                for(var i in gameObject){
+                    if (Model.isVisible(gameObject[i])) {
+                        gameObject[i].draw();
+                    }else{
+                        gameObject.splice(i,1);
+                    }
+                }
+            } else {
+                gameObject.draw();
+            }
+
         }
-        View.drawScore(ctx);
+        View.drawScore();
         if (gameState == STATE.gameOver) {
             View.drawGameOver(ctx);
         }
         if (gameState != STATE.gameOver) {
             window.requestAnimationFrame(View.redraw);
         }
+        if (score > 0 && score % 100 == 0) {
+            controller.addMine();
+        }
     },
-    drawGameOver: function (ctx) {
+    drawGameOver: function () {
         media.playSound('ouch');
         var scores = Resources.getHighScores();
         var metrics = ctx.measureText('Game Over!');
@@ -45,7 +59,7 @@ var View = {
 
 
     },
-    drawScore: function (ctx) {
+    drawScore: function () {
         ctx.fillStyle = '#000000';
         ctx.font = '20px Arial bold';
         ctx.fillText('Score: ' + score, 0, 20);

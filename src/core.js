@@ -45,7 +45,7 @@ var gameObjects = {
             x: 0,
             y: 350
         },
-        draw: function (ctx) {
+        draw: function () {
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
             ctx.fillStyle = this.ground.color;
