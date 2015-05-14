@@ -27,12 +27,9 @@ var media = {
     },
     playSound: function (name) {
         if (typeof this[name].value == 'undefined') {
-            this[name].value = new Media(this[name].src, afterPlay);
+            this[name].value = new Media(this[name].src, Resources.afterPlay);
         }
         this[name].value.play();
-        if (typeof device != 'undefined') {
-            this[name].value.seekTo(0);
-        }
     }
 
 };
@@ -58,8 +55,8 @@ var score = 0;
 var ctx;
 var controller;
 
-window.addEventListener('load', main);
-
+//window.addEventListener('load', main);
+document.addEventListener('deviceready', main, false);
 function main() {
     Resources.load();
     controller = new Controller();
